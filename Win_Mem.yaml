@@ -1,0 +1,79 @@
+---
+- name: Monitor and Alert on High CPU/Memory Utilization on Windows Servers
+  hosts: windows
+  gather_facts: false
+  tasks:
+    - name: Ensure WinRM is configured on the target host
+      win_ping:
+
+    - name: Fetch top 5 processes by CPU utilization
+      win_shell: |
+        Get-Process |
+        Sort-Object -Property CPU -Descending |
+        Select-Object -First 5 -Property Name, ID, CPU |
+        ConvertTo-Json -Depth 2
+      register: top_cpu_processes
+
+    - name: Fetch top 5 processes by memory utilization
+      win_shell: |
+        Get-Process |
+        Sort-Object -Property WorkingSet -Descending |
+        Select-Object -First 5 -Property Name, ID, @{Name="MemoryMB"; Expression={[math]::Round($_.WorkingSet / 1MB, 2)}} |
+        ConvertTo-Json -Depth 2
+      register: top_memory_processes
+
+    - name: Parse top CPU utilization processes
+      set_fact:
+        cpu_processes: "{{ top_cpu_processes.stdout | from_json }}"
+
+    - name: Parse top memory utilization processes
+      set_fact:
+        memory_processes: "{{ top_memory_processes.stdout | from_json }}"
+
+    - name: Check if any CPU process exceeds 90% utilization
+      set_fact:
+        high_cpu_processes: "{{ cpu_processes | selectattr('CPU', '>', 90) | list }}"
+
+    - name: Check if any memory process exceeds 90% utilization
+      set_fact:
+        high_memory_processes: "{{ memory_processes | selectattr('MemoryMB', '>', 90) | list }}"
+
+    - name: Display Top 5 CPU Utilization Processes
+      debug:
+        msg:
+          - "Top 5 Processes by CPU Utilization:"
+          - "{{ cpu_processes }}"
+
+    - name: Display Top 5 Memory Utilization Processes
+      debug:
+        msg:
+          - "Top 5 Processes by Memory Utilization:"
+          - "{{ memory_processes }}"
+
+    - name: Alert if CPU usage exceeds threshold
+      when: high_cpu_processes | length > 0
+      debug:
+        msg:
+          - "Alert: Processes exceeding 90% CPU utilization:"
+          - "{{ high_cpu_processes }}"
+
+    - name: Alert if Memory usage exceeds threshold
+      when: high_memory_processes | length > 0
+      debug:
+        msg:
+          - "Alert: Processes exceeding 90% Memory utilization:"
+          - "{{ high_memory_processes }}"
+
+    - name: Save structured output to a file
+      copy:
+        content: |
+          {
+            "Top_CPU_Processes": {{ cpu_processes | to_nice_json }},
+            "Top_Memory_Processes": {{ memory_processes | to_nice_json }},
+            "High_CPU_Processes": {{ high_cpu_processes | to_nice_json }},
+            "High_Memory_Processes": {{ high_memory_processes | to_nice_json }}
+          }
+        dest: "C:\\temp\\server_high_utilization_{{ inventory_hostname }}.json"
+
+  vars:
+    ansible_connection: winrm
