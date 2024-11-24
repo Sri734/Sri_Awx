@@ -1,6 +1,6 @@
 ---
 - name: Monitor and Alert on High CPU/Memory Utilization on Windows Servers
-  hosts: windows
+  hosts: windows_server
   gather_facts: false
   tasks:
     - name: Ensure WinRM is configured on the target host
