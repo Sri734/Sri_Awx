@@ -1,33 +1,17 @@
 ---
-- name: Gather OS configuration details
+- name: Simple playbook example
   hosts: localhost
-  become: yes
-  gather_facts: no  # Automatically collects system information
+  become: yes  # Run tasks as root
   tasks:
-    - name: Display OS name and version
-      debug:
-        msg: >
-          Operating System: {{ ansible_distribution }} {{ ansible_distribution_version }}
-          Release Name: {{ ansible_distribution_release }}
-          Architecture: {{ ansible_architecture }}
+    - name: Update the APT package cache
+      apt:
+        update_cache: yes
 
-    - name: Display Kernel version
-      debug:
-        msg: "Kernel Version: {{ ansible_kernel }}"
+    - name: Install Git
+      apt:
+        name: git
+        state: present
 
-    - name: Display Hostname
+    - name: Print success message
       debug:
-        msg: "Hostname: {{ ansible_nodename }}"
-
-    - name: Display Total Memory
-      debug:
-        msg: "Total Memory: {{ ansible_memtotal_mb }} MB"
-
-    - name: Display Number of CPUs
-      debug:
-        msg: "Number of CPUs: {{ ansible_processor_cores }}"
-
-    - name: Display IP Address
-      debug:
-        msg: "IP Address: {{ ansible_default_ipv4.address }}"
-
+        msg: "Git has been installed successfully!"
