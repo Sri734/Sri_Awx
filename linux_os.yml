@@ -2,7 +2,7 @@
 - name: Gather OS configuration details
   hosts: localhost
   become: yes
-  gather_facts: yes  # Automatically collects system information
+  gather_facts: no  # Automatically collects system information
   tasks:
     - name: Display OS name and version
       debug:
