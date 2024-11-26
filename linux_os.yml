@@ -1,0 +1,33 @@
+---
+- name: Gather OS configuration details
+  hosts: server
+  become: yes
+  gather_facts: yes  # Automatically collects system information
+  tasks:
+    - name: Display OS name and version
+      debug:
+        msg: >
+          Operating System: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Release Name: {{ ansible_distribution_release }}
+          Architecture: {{ ansible_architecture }}
+
+    - name: Display Kernel version
+      debug:
+        msg: "Kernel Version: {{ ansible_kernel }}"
+
+    - name: Display Hostname
+      debug:
+        msg: "Hostname: {{ ansible_nodename }}"
+
+    - name: Display Total Memory
+      debug:
+        msg: "Total Memory: {{ ansible_memtotal_mb }} MB"
+
+    - name: Display Number of CPUs
+      debug:
+        msg: "Number of CPUs: {{ ansible_processor_cores }}"
+
+    - name: Display IP Address
+      debug:
+        msg: "IP Address: {{ ansible_default_ipv4.address }}"
+
