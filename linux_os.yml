@@ -1,6 +1,6 @@
 ---
 - name: Simple playbook example
-  hosts: localhost
+  hosts: server
   become: yes  # Run tasks as root
   tasks:
     - name: Update the APT package cache
