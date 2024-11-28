@@ -1,7 +1,6 @@
 ---
 - name: Simple playbook example
   hosts: server
-  become: yes  # Run tasks as root
   tasks:
     - name: Update the APT package cache
       apt:
