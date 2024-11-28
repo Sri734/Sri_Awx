@@ -1,6 +1,7 @@
 ---
 - name: Simple playbook example
   hosts: server
+  become: no
   tasks:
     - name: Update the APT package cache
       apt:
